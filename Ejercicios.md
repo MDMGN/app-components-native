@@ -161,11 +161,3 @@ Mostrar un panel en tiempo real que combine:
 Un componente que simula un "dashboard" de movimiento para pruebas de hardware, juegos o visualizaciones.
 
 ---
-
----
-
-## 💡 Ideas adicionales
-
-- Detectar sacudidas con el acelerómetro y mostrar una alerta.
-- Usar el giroscopio para controlar una cámara en un juego.
-- Usar el magnetómetro como brújula de orientación real.
