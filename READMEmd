@@ -1,0 +1,190 @@
+# Expo Sensors
+
+## Proporcionar varias API para acceder a los sensores del dispositivo para medir el movimiento, la orientación, la presión, los campos magnéticos, la luz ambiental y el conteo de pasos.
+
+## 1. Acelerómetro (`Accelerometer`)
+
+### ¿Qué es?
+
+El acelerómetro mide la aceleración del dispositivo en los 3 ejes (X, Y, Z), es decir, cómo se mueve o inclina el teléfono en el espacio.
+
+### ¿Para qué se usa?
+
+- Detectar movimientos y gestos.
+- Crear podómetros caseros.
+- Cambiar interfaz según la orientación.
+- Juegos y apps de realidad aumentada.
+
+### API básica en Expo
+
+```ts
+import { Accelerometer } from "expo-sensors";
+
+Accelerometer.setUpdateInterval(100); // actualizar cada 100ms
+
+const subscription = Accelerometer.addListener(({ x, y, z }) => {
+  console.log(`x: ${x}, y: ${y}, z: ${z}`);
+});
+```
+
+---
+
+## 2. Podómetro (`Pedometer`)
+
+### ¿Qué es?
+
+Un podómetro cuenta los pasos del usuario basándose en los datos de movimiento del dispositivo.
+
+### ¿Para qué se usa?
+
+- Apps de fitness.
+- Monitoreo de actividad física.
+- Juegos que reaccionan a caminar o correr.
+
+### API básica en Expo
+
+```ts
+import { Pedometer } from "expo-sensors";
+
+// Verificar si está disponible
+const isAvailable = await Pedometer.isAvailableAsync();
+
+if (isAvailable) {
+  const subscription = Pedometer.watchStepCount((result) => {
+    console.log(`Pasos dados: ${result.steps}`);
+  });
+}
+```
+
+---
+
+## 3. Giroscopio (`Gyroscope`)
+
+### ¿Qué es?
+
+El giroscopio mide la velocidad angular, o sea, cómo gira el dispositivo alrededor de sus ejes (X, Y, Z).
+
+### ¿Para qué se usa?
+
+- Detectar rotación y orientación fina.
+- Juegos y simuladores.
+- Apps de realidad aumentada y navegación.
+
+### API básica en Expo
+
+```ts
+import { Gyroscope } from "expo-sensors";
+
+Gyroscope.setUpdateInterval(100);
+
+const subscription = Gyroscope.addListener(({ x, y, z }) => {
+  console.log(`Rotación en rad/s - x: ${x}, y: ${y}, z: ${z}`);
+});
+```
+
+---
+
+## 4. Magnetómetro (`Magnetometer`)
+
+### ¿Qué es?
+
+Mide el campo magnético terrestre para ayudar a determinar la orientación (como una brújula).
+
+### ¿Para qué se usa?
+
+- Brújulas.
+- Apps de navegación.
+- Realidad aumentada.
+
+### API básica en Expo
+
+```ts
+import { Magnetometer } from "expo-sensors";
+
+Magnetometer.setUpdateInterval(100);
+
+const subscription = Magnetometer.addListener(({ x, y, z }) => {
+  console.log(`Campo magnético - x: ${x}, y: ${y}, z: ${z}`);
+});
+```
+
+---
+
+## 5. Ejemplo combinado simple
+
+```tsx
+import React, { useEffect, useState } from "react";
+import { View, Text, StyleSheet } from "react-native";
+import {
+  Accelerometer,
+  Gyroscope,
+  Magnetometer,
+  Pedometer,
+} from "expo-sensors";
+
+export default function SensorsDemo() {
+  const [accelData, setAccelData] = useState({ x: 0, y: 0, z: 0 });
+  const [gyroData, setGyroData] = useState({ x: 0, y: 0, z: 0 });
+  const [magnetData, setMagnetData] = useState({ x: 0, y: 0, z: 0 });
+  const [steps, setSteps] = useState(0);
+
+  useEffect(() => {
+    Accelerometer.setUpdateInterval(500);
+    Gyroscope.setUpdateInterval(500);
+    Magnetometer.setUpdateInterval(500);
+
+    const accelSub = Accelerometer.addListener(setAccelData);
+    const gyroSub = Gyroscope.addListener(setGyroData);
+    const magnetSub = Magnetometer.addListener(setMagnetData);
+
+    let pedometerSub;
+    Pedometer.isAvailableAsync().then((available) => {
+      if (available) {
+        pedometerSub = Pedometer.watchStepCount((result) =>
+          setSteps(result.steps)
+        );
+      }
+    });
+
+    return () => {
+      accelSub.remove();
+      gyroSub.remove();
+      magnetSub.remove();
+      pedometerSub && pedometerSub.remove();
+    };
+  }, []);
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>Sensores Expo Demo</Text>
+      <Text style={styles.sensor}>
+        Acelerómetro: x={accelData.x.toFixed(2)} y={accelData.y.toFixed(2)} z=
+        {accelData.z.toFixed(2)}
+      </Text>
+      <Text style={styles.sensor}>
+        Giroscopio: x={gyroData.x.toFixed(2)} y={gyroData.y.toFixed(2)} z=
+        {gyroData.z.toFixed(2)}
+      </Text>
+      <Text style={styles.sensor}>
+        Magnetómetro: x={magnetData.x.toFixed(2)} y={magnetData.y.toFixed(2)} z=
+        {magnetData.z.toFixed(2)}
+      </Text>
+      <Text style={styles.sensor}>Pasos: {steps}</Text>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { padding: 20, marginTop: 40 },
+  title: { fontSize: 22, fontWeight: "bold", marginBottom: 15 },
+  sensor: { fontSize: 16, marginBottom: 10 },
+});
+```
+
+---
+
+## Recursos oficiales
+
+- [Expo Sensors Docs](https://docs.expo.dev/versions/latest/sdk/sensors/)
+
+---
